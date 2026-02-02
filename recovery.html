@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reset Password</title>
+  <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 400px; margin: 50px auto; padding: 20px; }
+    form { background: #f9f9f9; padding: 30px; border-radius: 8px; }
+    input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; }
+    button { width: 100%; background: #005fcc; color: white; border: none; padding: 12px; border-radius: 6px; cursor: pointer; font-size: 16px; }
+    button:hover { background: #004494; }
+  </style>
+</head>
+<body>
+  <h1>🔑 Reset Your Password</h1>
+  
+  <form id="reset-form">
+    <label>New Password:</label>
+    <input type="password" id="new-password" placeholder="Enter new password" required minlength="8">
+    <button type="submit">Set New Password</button>
+  </form>
+
+  <p id="message" style="color: green; margin-top: 20px;"></p>
+
+  <script>
+    netlifyIdentity.init();
+    
+    // Check for recovery token in URL
+    const urlParams = new URLSearchParams(window.location.hash.substring(1));
+    const recoveryToken = urlParams.get('recovery_token');
+    
+    if (!recoveryToken) {
+      document.body.innerHTML = '<h1>Error: No recovery token found</h1><p>Please request a new password reset.</p>';
+    }
+    
+    document.getElementById('reset-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const password = document.getElementById('new-password').value;
+      const messageEl = document.getElementById('message');
+      
+      try {
+        await netlifyIdentity.gotrue.recover(recoveryToken, password);
+        messageEl.innerHTML = '✅ Password reset successful! <a href="/">Return to home</a>';
+        document.getElementById('reset-form').style.display = 'none';
+      } catch (error) {
+        messageEl.style.color = 'red';
+        messageEl.textContent = `Error: ${error.message}`;
+      }
+    });
+  </script>
+</body>
+</html>
+  
