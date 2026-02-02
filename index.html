@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Netlify Identity Demo</title>
+  <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 600px; margin: 50px auto; padding: 20px; }
+    .user-info { background: #f0f8ff; padding: 20px; border-radius: 8px; margin: 20px 0; }
+    button { background: #005fcc; color: white; border: none; padding: 12px 24px; border-radius: 6px; cursor: pointer; margin: 5px; }
+    button:hover { background: #004494; }
+    .protected { background: #e8f5e8; padding: 20px; border-radius: 8px; margin: 20px 0; }
+  </style>
+</head>
+<body>
+  <h1>🛡️ Netlify Identity Demo</h1>
+  
+  <div id="user-status">Loading...</div>
+  
+  <div id="auth-buttons">
+    <button onclick="netlifyIdentity.open('login')">Login</button>
+    <button onclick="netlifyIdentity.open('signup')">Sign Up</button>
+    <button onclick="netlifyIdentity.open('forgot-password')">Forgot Password</button>
+  </div>
+
+  <div id="protected-content" class="protected" style="display: none;">
+    <h2>✅ Protected Content</h2>
+    <p>You are logged in! Your user ID: <span id="user-id"></span></p>
+    <p>User email: <span id="user-email"></span></p>
+    <button onclick="logout()">Logout</button>
+  </div>
+
+  <script>
+    netlifyIdentity.init();
+    
+    function updateUI(user) {
+      const status = document.getElementById('user-status');
+      const protectedContent = document.getElementById('protected-content');
+      const authButtons = document.getElementById('auth-buttons');
+      
+      if (user) {
+        status.innerHTML = `👋 Welcome <strong>${user.user_metadata?.full_name || user.email}</strong>`;
+        document.getElementById('user-id').textContent = user.id;
+        document.getElementById('user-email').textContent = user.email;
+        protectedContent.style.display = 'block';
+        authButtons.style.display = 'none';
+      } else {
+        status.innerHTML = '👋 Please log in to access protected content';
+        protectedContent.style.display = 'none';
+        authButtons.style.display = 'block';
+      }
+    }
+    
+    // Listen for auth events
+    netlifyIdentity.on('init', user => updateUI(user));
+    netlifyIdentity.on('login', user => {
+      console.log('Logged in:', user);
+      updateUI(user);
+    });
+    netlifyIdentity.on('signup', user => {
+      console.log('Signed up:', user);
+      updateUI(user);
+    });
+    netlifyIdentity.on('logout', () => {
+      console.log('Logged out');
+      updateUI(null);
+    });
+    
+    function logout() {
+      netlifyIdentity.logout();
+    }
+  </script>
+</body>
+</html>
